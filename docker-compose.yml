@@ -5,16 +5,23 @@ services:
   # ELASTICSEARCH MASTER NODE #
   #############################
   elasticsearch:
-    restart: unless-stopped
     image: blacktop/elasticsearch:x-pack
+    container_name: elasticsearch
     environment:
       - cluster.name=docker-cluster
       - network.host=0
       - ELASTIC_PASSWORD=pleasechangeme
       - xpack.security.transport.filter.enabled=false
       - xpack.security.audit.enabled=true
-    # volumes:
-    #   - data:/usr/share/elasticsearch/data
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 4g
+    volumes:
+      - /diskZ/esdata1:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
     networks:
@@ -28,6 +35,7 @@ services:
       - elasticsearch.url=http://elasticsearch:9200
       - elasticsearch.username=elastic
       - elasticsearch.password=pleasechangeme
+      - server.host=0.0.0.0
       # - xpack.monitoring.ui.container.elasticsearch.enabled=true
     ports:
       - "80:5601"
@@ -46,3 +54,9 @@ services:
 networks:
   elastic:
     driver: bridge
+
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
